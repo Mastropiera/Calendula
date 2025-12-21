@@ -3,8 +3,9 @@ import { Funcionario, Turno } from '@/types'
 // Funciones para manejar el almacenamiento de funcionarios
 export async function getFuncionarios(): Promise<Funcionario[]> {
   try {
-    const result = await window.storage.get('funcionarios')
-    return result ? JSON.parse(result.value) : []
+    if (typeof window === 'undefined') return []
+    const data = localStorage.getItem('funcionarios')
+    return data ? JSON.parse(data) : []
   } catch (error) {
     console.log('No hay funcionarios guardados aún')
     return []
@@ -13,7 +14,8 @@ export async function getFuncionarios(): Promise<Funcionario[]> {
 
 export async function saveFuncionarios(funcionarios: Funcionario[]): Promise<void> {
   try {
-    await window.storage.set('funcionarios', JSON.stringify(funcionarios))
+    if (typeof window === 'undefined') return
+    localStorage.setItem('funcionarios', JSON.stringify(funcionarios))
   } catch (error) {
     console.error('Error guardando funcionarios:', error)
     throw error
@@ -44,8 +46,9 @@ export async function deleteFuncionario(id: string): Promise<void> {
 // Funciones para manejar el almacenamiento de turnos
 export async function getTurnos(): Promise<Turno[]> {
   try {
-    const result = await window.storage.get('turnos')
-    return result ? JSON.parse(result.value) : []
+    if (typeof window === 'undefined') return []
+    const data = localStorage.getItem('turnos')
+    return data ? JSON.parse(data) : []
   } catch (error) {
     console.log('No hay turnos guardados aún')
     return []
@@ -54,7 +57,8 @@ export async function getTurnos(): Promise<Turno[]> {
 
 export async function saveTurnos(turnos: Turno[]): Promise<void> {
   try {
-    await window.storage.set('turnos', JSON.stringify(turnos))
+    if (typeof window === 'undefined') return
+    localStorage.setItem('turnos', JSON.stringify(turnos))
   } catch (error) {
     console.error('Error guardando turnos:', error)
     throw error
