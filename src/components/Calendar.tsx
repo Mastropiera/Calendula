@@ -5,7 +5,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isTod
 import { es } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Turno, EstadoCobertura, VistaCalendario, Seccion, Estamento } from '@/types'
-import { REQUERIMIENTOS_SECCION } from '@/types'
+import { REQUERIMIENTOS_SECCION, NOMBRES_SECCION } from '@/types'
 
 interface CalendarProps {
   turnos: Turno[]
@@ -13,16 +13,18 @@ interface CalendarProps {
   vista: VistaCalendario
   seccionSeleccionada?: Seccion
   estamentoSeleccionado?: Estamento
+  funcionarioSeleccionado?: string
   funcionarios: any[]
 }
 
-export default function Calendar({ 
-  turnos, 
-  onDayClick, 
-  vista, 
-  seccionSeleccionada, 
+export default function Calendar({
+  turnos,
+  onDayClick,
+  vista,
+  seccionSeleccionada,
   estamentoSeleccionado,
-  funcionarios 
+  funcionarioSeleccionado,
+  funcionarios
 }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
@@ -74,7 +76,11 @@ export default function Calendar({
       turnosDelDia = turnosDelDia.filter(t => t.seccion === seccionSeleccionada)
     }
 
-    if (estamentoSeleccionado) {
+    if (vista === 'por-funcionario' && funcionarioSeleccionado) {
+      turnosDelDia = turnosDelDia.filter(t => t.funcionarioId === funcionarioSeleccionado)
+    }
+
+    if (estamentoSeleccionado && vista !== 'por-funcionario') {
       turnosDelDia = turnosDelDia.filter(t => {
         const funcionario = funcionarios.find(f => f.id === t.funcionarioId)
         return funcionario?.estamento === estamentoSeleccionado
@@ -89,6 +95,29 @@ export default function Calendar({
       const turnosVista = getTurnosParaVista(date)
       if (turnosVista.length === 0) return 'bg-white hover:bg-gray-50'
       return 'bg-blue-50 hover:bg-blue-100'
+    }
+
+    if (vista === 'por-funcionario') {
+      const turnosVista = getTurnosParaVista(date)
+      if (turnosVista.length === 0) return 'bg-white hover:bg-gray-50'
+
+      // Determinar color según el tipo de turno
+      const turno = turnosVista[0] // Solo debería haber un turno por día para un funcionario
+
+      if (turno.seccion === 'coordinacion') {
+        return 'bg-green-500 hover:bg-green-600 text-white'
+      }
+
+      if (turno.tipoTurno === 'largo') {
+        return 'bg-sky-100 hover:bg-sky-200'
+      }
+
+      if (turno.tipoTurno === 'noche') {
+        return 'bg-blue-600 hover:bg-blue-700 text-white'
+      }
+
+      // Otro tipo de turno (personalizado, etc.)
+      return 'bg-orange-400 hover:bg-orange-500 text-white'
     }
 
     const estado = getEstadoDia(date)
@@ -166,7 +195,7 @@ export default function Calendar({
                 </div>
               )}
 
-              {/* Mostrar nombres en vista por sección */}
+              {/* Mostrar información en vista por sección */}
               {vista === 'por-seccion' && turnosVista.length > 0 && (
                 <div className="text-xs space-y-0.5 overflow-hidden mt-1">
                   {turnosVista.slice(0, 2).map(turno => {
@@ -184,6 +213,25 @@ export default function Calendar({
                   {turnosVista.length > 2 && (
                     <div className="text-gray-500">+{turnosVista.length - 2}</div>
                   )}
+                </div>
+              )}
+
+              {/* Mostrar información en vista por funcionario */}
+              {vista === 'por-funcionario' && turnosVista.length > 0 && (
+                <div className="text-xs space-y-0.5 overflow-hidden mt-1">
+                  {turnosVista.map(turno => (
+                    <div key={turno.id} className="font-medium">
+                      <div className="truncate">
+                        {NOMBRES_SECCION[turno.seccion]}
+                      </div>
+                      <div className="truncate opacity-90">
+                        {turno.tipoTurno === 'largo' ? 'Largo' : 'Noche'}: {turno.horaInicio}-{turno.horaFin}
+                      </div>
+                      {turno.notas && (
+                        <div className="italic truncate opacity-80 text-xs">{turno.notas}</div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </button>

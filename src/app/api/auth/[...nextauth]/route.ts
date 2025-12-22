@@ -6,14 +6,6 @@ const handler = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: 'openid email profile https://www.googleapis.com/auth/calendar',
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
     }),
   ],
   callbacks: {
@@ -29,9 +21,6 @@ const handler = NextAuth({
       session.refreshToken = token.refreshToken as string
       return session
     },
-  },
-  pages: {
-    signIn: '/auth/signin',
   },
   secret: process.env.NEXTAUTH_SECRET,
 })

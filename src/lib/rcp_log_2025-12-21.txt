@@ -1,0 +1,26 @@
+﻿Registro de Maniobras de RCP
+Fecha y Hora de Inicio: 21-12-2025, 9:33:26 a. m.
+Tiempo Total de Maniobras: 02:43
+------------------------------------------
+
+[09:33:26 a. m.] - [T+ 00:00] Inicio de maniobras de RCP.
+[09:33:28 a. m.] - [T+ 00:01] Inicio de ciclo de compresiones 1.
+[09:33:31 a. m.] - [T+ 00:04] Ritmo comprobado: Taquicardia Ventricular Sin Pulso
+[09:33:34 a. m.] - [T+ 00:07] Desfibrilación #1 administrada: 200J.
+[09:33:39 a. m.] - [T+ 00:12] Administrada Epinefrina en bolo: 1 mg.
+[09:33:45 a. m.] - [T+ 00:18] Administrada Epinefrina push dose: 1 push doses (10 mcg).
+[09:34:05 a. m.] - [T+ 00:38] Se instala acceso IV #18G en Extremidad Superior Derecha
+[09:35:02 a. m.] - [T+ 01:34] Sedoanalgesia para intubación: Ketamina 2mg/kg, Midazolam 5mg, Succinilcolina 200mg
+[09:35:11 a. m.] - [T+ 01:42] Instalado dispositivo de vía aérea: TET, Calibre 8, Intentos: 1
+[09:35:17 a. m.] - [T+ 01:49] Administrado Amiodarona: 300 mg.
+[09:35:57 a. m.] - [T+ 02:27] Iniciada infusión de fentanilo (10 mg) en Suero Fisiológico 250ml a 10 γ/kg/h
+[09:36:10 a. m.] - [T+ 02:40] Nota: paciente se murió
+[09:36:13 a. m.] - [T+ 02:43] Registro Finalizado.
+
+------------------------------------------
+RESUMEN
+Tiempo Total: 02:43
+Ciclos de Compresiones: 0
+Desfibrilaciones: 1
+Epinefrina - Bolos: 1
+Epinefrina - Push Doses: 1

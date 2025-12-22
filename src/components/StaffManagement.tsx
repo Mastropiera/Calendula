@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Plus, Phone, Mail, Trash2, Edit2 } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { X, Plus, Phone, Mail, Trash2, Edit2, Upload } from 'lucide-react'
 import type { Funcionario, Estamento } from '@/types'
 import { saveFuncionarios } from '@/lib/storage'
+import * as XLSX from 'xlsx'
 
 interface StaffManagementProps {
   funcionarios: Funcionario[]
@@ -25,6 +26,7 @@ export default function StaffManagement({
     telefono: '',
     email: ''
   })
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const funcionariosFiltrados = funcionarios.filter(f => f.estamento === activeTab)
 
@@ -85,6 +87,81 @@ export default function StaffManagement({
     setFormData({ nombre: '', apellido: '', telefono: '', email: '' })
   }
 
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const data = await file.arrayBuffer()
+      const workbook = XLSX.read(data)
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]]
+      const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[]
+
+      // Validar y convertir los datos
+      const nuevosFuncionarios: Funcionario[] = []
+      const errores: string[] = []
+
+      jsonData.forEach((row, index) => {
+        const nombre = row['Nombre'] || row['nombre']
+        const apellido = row['Apellido'] || row['apellido']
+        const email = row['Email'] || row['email']
+        const telefono = row['Teléfono'] || row['Telefono'] || row['telefono'] || ''
+        const estamento = (row['Estamento'] || row['estamento'] || '').toLowerCase()
+
+        // Validar campos obligatorios
+        if (!nombre || !apellido || !email) {
+          errores.push(`Fila ${index + 2}: faltan campos obligatorios (Nombre, Apellido o Email)`)
+          return
+        }
+
+        // Validar estamento
+        if (!['enfermera', 'tens', 'auxiliar'].includes(estamento)) {
+          errores.push(`Fila ${index + 2}: estamento inválido "${estamento}" (debe ser: enfermera, tens o auxiliar)`)
+          return
+        }
+
+        // Validar email duplicado
+        const emailExiste = funcionarios.some(f => f.email === email) ||
+                           nuevosFuncionarios.some(f => f.email === email)
+        if (emailExiste) {
+          errores.push(`Fila ${index + 2}: el email ${email} ya existe`)
+          return
+        }
+
+        nuevosFuncionarios.push({
+          id: `func-${Date.now()}-${Math.random()}`,
+          nombre,
+          apellido,
+          email,
+          telefono,
+          estamento: estamento as Estamento
+        })
+      })
+
+      // Mostrar resultados
+      if (errores.length > 0) {
+        alert(`Se encontraron ${errores.length} error(es):\n\n${errores.slice(0, 5).join('\n')}${errores.length > 5 ? `\n\n... y ${errores.length - 5} más` : ''}`)
+      }
+
+      if (nuevosFuncionarios.length > 0) {
+        const updatedFuncionarios = [...funcionarios, ...nuevosFuncionarios]
+        await saveFuncionarios(updatedFuncionarios)
+        onFuncionariosChange(updatedFuncionarios)
+        alert(`Se importaron exitosamente ${nuevosFuncionarios.length} funcionario(s)`)
+      } else if (errores.length === 0) {
+        alert('No se encontraron datos válidos para importar')
+      }
+
+      // Limpiar input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } catch (error) {
+      console.error('Error al importar:', error)
+      alert('Error al procesar el archivo. Asegúrate de que sea un archivo Excel válido.')
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
@@ -135,15 +212,31 @@ export default function StaffManagement({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {/* Botón agregar */}
+          {/* Botones agregar e importar */}
           {!isAdding && (
-            <button
-              onClick={() => setIsAdding(true)}
-              className="mb-4 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              Agregar {activeTab === 'enfermera' ? 'Enfermera' : activeTab === 'tens' ? 'TENS' : 'Auxiliar'}
-            </button>
+            <div className="mb-4 flex gap-2">
+              <button
+                onClick={() => setIsAdding(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Agregar {activeTab === 'enfermera' ? 'Enfermera' : activeTab === 'tens' ? 'TENS' : 'Auxiliar'}
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <Upload className="w-5 h-5" />
+                Importar desde Excel
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImport}
+                className="hidden"
+              />
+            </div>
           )}
 
           {/* Formulario */}

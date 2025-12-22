@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { RefreshCw, LogOut, Users, Download } from 'lucide-react'
+import { RefreshCw, LogOut, Users, Download, Repeat } from 'lucide-react'
 import Calendar from '@/components/Calendar'
 import DayModal from '@/components/DayModal'
 import ViewSelector from '@/components/ViewSelector'
 import AssignmentPanel from '@/components/AssignmentPanel'
 import StaffManagement from '@/components/StaffManagement'
+import RotativaCuartoTurno from '@/components/RotativaCuartoTurno'
 import { getFuncionarios, getTurnos } from '@/lib/storage'
 import { exportTurnosToExcel } from '@/lib/exportToExcel'
 import type { Funcionario, Turno, VistaCalendario, Seccion, Estamento } from '@/types'
@@ -19,8 +20,10 @@ export default function Home() {
   const [vista, setVista] = useState<VistaCalendario>('general')
   const [seccionSeleccionada, setSeccionSeleccionada] = useState<Seccion>()
   const [estamentoSeleccionado, setEstamentoSeleccionado] = useState<Estamento>()
+  const [funcionarioSeleccionado, setFuncionarioSeleccionado] = useState<string>()
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [showStaffModal, setShowStaffModal] = useState(false)
+  const [showRotativaModal, setShowRotativaModal] = useState(false)
   const [loading, setLoading] = useState(true)
 
   // Cargar datos
@@ -135,6 +138,13 @@ export default function Home() {
                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
               </button>
               <button
+                onClick={() => setShowRotativaModal(true)}
+                className="p-2 hover:bg-purple-100 text-purple-600 rounded-lg transition-colors"
+                title="Rotativa 4° Turno"
+              >
+                <Repeat className="w-5 h-5" />
+              </button>
+              <button
                 onClick={() => setShowStaffModal(true)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Gestionar Personal"
@@ -160,6 +170,9 @@ export default function Home() {
           onSeccionChange={setSeccionSeleccionada}
           estamentoSeleccionado={estamentoSeleccionado}
           onEstamentoChange={setEstamentoSeleccionado}
+          funcionarioSeleccionado={funcionarioSeleccionado}
+          onFuncionarioChange={setFuncionarioSeleccionado}
+          funcionarios={funcionarios}
         />
 
         {/* Calendario */}
@@ -171,6 +184,7 @@ export default function Home() {
             vista={vista}
             seccionSeleccionada={seccionSeleccionada}
             estamentoSeleccionado={estamentoSeleccionado}
+            funcionarioSeleccionado={funcionarioSeleccionado}
           />
         </div>
 
@@ -197,6 +211,16 @@ export default function Home() {
             funcionarios={funcionarios}
             onFuncionariosChange={setFuncionarios}
             onClose={() => setShowStaffModal(false)}
+          />
+        )}
+
+        {/* Modal de rotativa de cuarto turno */}
+        {showRotativaModal && (
+          <RotativaCuartoTurno
+            funcionarios={funcionarios}
+            turnos={turnos}
+            onTurnosChange={setTurnos}
+            onClose={() => setShowRotativaModal(false)}
           />
         )}
       </div>

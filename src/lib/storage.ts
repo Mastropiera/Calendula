@@ -1,4 +1,4 @@
-import { Funcionario, Turno } from '@/types'
+import { Funcionario, Turno, RotativaCuartoTurno } from '@/types'
 
 // Funciones para manejar el almacenamiento de funcionarios
 export async function getFuncionarios(): Promise<Funcionario[]> {
@@ -94,4 +94,47 @@ export async function getTurnosByFecha(fecha: string): Promise<Turno[]> {
 export async function getTurnosByFuncionario(funcionarioId: string): Promise<Turno[]> {
   const turnos = await getTurnos()
   return turnos.filter(t => t.funcionarioId === funcionarioId)
+}
+
+// Funciones para manejar el almacenamiento de rotativas de cuarto turno
+export async function getRotativas(): Promise<RotativaCuartoTurno[]> {
+  try {
+    if (typeof window === 'undefined') return []
+    const data = localStorage.getItem('rotativas')
+    return data ? JSON.parse(data) : []
+  } catch (error) {
+    console.log('No hay rotativas guardadas aún')
+    return []
+  }
+}
+
+export async function saveRotativas(rotativas: RotativaCuartoTurno[]): Promise<void> {
+  try {
+    if (typeof window === 'undefined') return
+    localStorage.setItem('rotativas', JSON.stringify(rotativas))
+  } catch (error) {
+    console.error('Error guardando rotativas:', error)
+    throw error
+  }
+}
+
+export async function addRotativa(rotativa: RotativaCuartoTurno): Promise<void> {
+  const rotativas = await getRotativas()
+  rotativas.push(rotativa)
+  await saveRotativas(rotativas)
+}
+
+export async function updateRotativa(id: string, data: Partial<RotativaCuartoTurno>): Promise<void> {
+  const rotativas = await getRotativas()
+  const index = rotativas.findIndex(r => r.id === id)
+  if (index !== -1) {
+    rotativas[index] = { ...rotativas[index], ...data }
+    await saveRotativas(rotativas)
+  }
+}
+
+export async function deleteRotativa(id: string): Promise<void> {
+  const rotativas = await getRotativas()
+  const filtered = rotativas.filter(r => r.id !== id)
+  await saveRotativas(filtered)
 }
