@@ -40,6 +40,8 @@ export interface Turno {
   funcionarioId: string
   seccion: Seccion
   personalizado?: boolean
+  color?: string // color en formato hex, ej: #FF5733
+  notas?: string // notas adicionales del turno
 }
 
 // Estructura de cobertura diaria por sección

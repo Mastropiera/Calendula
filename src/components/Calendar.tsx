@@ -148,20 +148,41 @@ export default function Calendar({
               `}
             >
               <span className="text-lg mb-1">{format(day, 'd')}</span>
-              
+
+              {/* Indicadores de color de turnos */}
+              {turnosVista.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {turnosVista.slice(0, 4).map(turno => (
+                    <div
+                      key={turno.id}
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: turno.color || '#10B981' }}
+                      title={funcionarios.find(f => f.id === turno.funcionarioId)?.nombre}
+                    />
+                  ))}
+                  {turnosVista.length > 4 && (
+                    <span className="text-xs text-gray-500">+{turnosVista.length - 4}</span>
+                  )}
+                </div>
+              )}
+
               {/* Mostrar nombres en vista por sección */}
               {vista === 'por-seccion' && turnosVista.length > 0 && (
-                <div className="text-xs space-y-0.5 overflow-hidden">
-                  {turnosVista.slice(0, 3).map(turno => {
+                <div className="text-xs space-y-0.5 overflow-hidden mt-1">
+                  {turnosVista.slice(0, 2).map(turno => {
                     const func = funcionarios.find(f => f.id === turno.funcionarioId)
                     return (
-                      <div key={turno.id} className="truncate text-gray-700">
+                      <div key={turno.id} className="truncate text-gray-700 flex items-center gap-1">
+                        <div
+                          className="w-2 h-2 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: turno.color || '#10B981' }}
+                        />
                         {func?.nombre.split(' ')[0]} {func?.apellido.split(' ')[0]}
                       </div>
                     )
                   })}
-                  {turnosVista.length > 3 && (
-                    <div className="text-gray-500">+{turnosVista.length - 3}</div>
+                  {turnosVista.length > 2 && (
+                    <div className="text-gray-500">+{turnosVista.length - 2}</div>
                   )}
                 </div>
               )}

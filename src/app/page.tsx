@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { RefreshCw, LogOut, Users } from 'lucide-react'
+import { RefreshCw, LogOut, Users, Download } from 'lucide-react'
 import Calendar from '@/components/Calendar'
 import DayModal from '@/components/DayModal'
 import ViewSelector from '@/components/ViewSelector'
 import AssignmentPanel from '@/components/AssignmentPanel'
 import StaffManagement from '@/components/StaffManagement'
 import { getFuncionarios, getTurnos } from '@/lib/storage'
+import { exportTurnosToExcel } from '@/lib/exportToExcel'
 import type { Funcionario, Turno, VistaCalendario, Seccion, Estamento } from '@/types'
 
 export default function Home() {
@@ -45,6 +46,20 @@ export default function Home() {
 
   const handleRefresh = () => {
     loadData()
+  }
+
+  const handleExportToExcel = () => {
+    if (turnos.length === 0) {
+      alert('No hay turnos para exportar')
+      return
+    }
+
+    const currentDate = new Date()
+    exportTurnosToExcel({
+      turnos,
+      funcionarios,
+      mesInicio: currentDate
+    })
   }
 
   // Pantalla de login
@@ -103,6 +118,14 @@ export default function Home() {
                 <p className="text-sm text-gray-600">Bienvenida</p>
                 <p className="font-semibold text-gray-800">{session.user?.name}</p>
               </div>
+              <button
+                onClick={handleExportToExcel}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                title="Exportar a Excel"
+              >
+                <Download className="w-5 h-5" />
+                <span className="hidden md:inline">Exportar</span>
+              </button>
               <button
                 onClick={handleRefresh}
                 disabled={loading}

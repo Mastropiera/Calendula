@@ -23,8 +23,21 @@ export default function AssignByDay({
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTipoTurno, setSelectedTipoTurno] = useState<TipoTurno>('largo')
   const [selectedFuncionario, setSelectedFuncionario] = useState('')
+  const [selectedColor, setSelectedColor] = useState('#10B981') // verde por defecto
+  const [notas, setNotas] = useState('')
 
   const funcionariosFiltrados = funcionarios.filter(f => f.estamento === selectedEstamento)
+
+  const coloresPredefInidos = [
+    { nombre: 'Verde', valor: '#10B981' },
+    { nombre: 'Azul', valor: '#3B82F6' },
+    { nombre: 'Morado', valor: '#8B5CF6' },
+    { nombre: 'Amarillo', valor: '#F59E0B' },
+    { nombre: 'Rojo', valor: '#EF4444' },
+    { nombre: 'Rosa', valor: '#EC4899' },
+    { nombre: 'Turquesa', valor: '#14B8A6' },
+    { nombre: 'Gris', valor: '#6B7280' },
+  ]
 
   const handleAssign = async () => {
     if (!selectedDate || !selectedFuncionario) {
@@ -51,7 +64,9 @@ export default function AssignByDay({
       horaFin,
       funcionarioId: selectedFuncionario,
       seccion: selectedSeccion,
-      personalizado: false
+      personalizado: false,
+      color: selectedColor,
+      notas: notas || undefined
     }
 
     const nuevosTurnos = [...turnos, nuevoTurno]
@@ -60,6 +75,8 @@ export default function AssignByDay({
 
     // Reset
     setSelectedFuncionario('')
+    setNotas('')
+    setSelectedColor('#10B981')
     alert('Turno asignado correctamente')
   }
 
@@ -150,6 +167,29 @@ export default function AssignByDay({
           </select>
         </div>
 
+        {/* Color */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Color del Turno
+          </label>
+          <div className="flex gap-2">
+            {coloresPredefInidos.map(color => (
+              <button
+                key={color.valor}
+                type="button"
+                onClick={() => setSelectedColor(color.valor)}
+                className={`w-8 h-8 rounded-full border-2 transition-all ${
+                  selectedColor === color.valor
+                    ? 'border-gray-800 scale-110'
+                    : 'border-gray-300 hover:scale-105'
+                }`}
+                style={{ backgroundColor: color.valor }}
+                title={color.nombre}
+              />
+            ))}
+          </div>
+        </div>
+
         {/* Botón */}
         <div className="flex items-end">
           <button
@@ -161,6 +201,20 @@ export default function AssignByDay({
             Asignar Turno
           </button>
         </div>
+      </div>
+
+      {/* Notas */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Notas (opcional)
+        </label>
+        <textarea
+          value={notas}
+          onChange={(e) => setNotas(e.target.value)}
+          placeholder="Agregar notas sobre este turno..."
+          rows={2}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+        />
       </div>
 
       {/* Lista de turnos asignados para la fecha seleccionada */}
@@ -175,12 +229,24 @@ export default function AssignByDay({
               .map(turno => {
                 const func = funcionarios.find(f => f.id === turno.funcionarioId)
                 return (
-                  <div key={turno.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                    <div>
-                      <span className="font-medium">{func?.nombre} {func?.apellido}</span>
-                      <span className="text-sm text-gray-600 ml-2">
-                        ({turno.tipoTurno === 'largo' ? 'Largo' : 'Noche'})
-                      </span>
+                  <div
+                    key={turno.id}
+                    className="flex items-center justify-between p-3 rounded-lg border-l-4"
+                    style={{
+                      backgroundColor: `${turno.color || '#10B981'}15`,
+                      borderLeftColor: turno.color || '#10B981'
+                    }}
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{func?.nombre} {func?.apellido}</span>
+                        <span className="text-sm text-gray-600">
+                          ({turno.tipoTurno === 'largo' ? 'Largo' : 'Noche'})
+                        </span>
+                      </div>
+                      {turno.notas && (
+                        <p className="text-sm text-gray-600 mt-1 italic">{turno.notas}</p>
+                      )}
                     </div>
                     <button
                       onClick={async () => {
@@ -188,7 +254,7 @@ export default function AssignByDay({
                         await saveTurnos(nuevosTurnos)
                         onTurnosChange(nuevosTurnos)
                       }}
-                      className="text-red-600 hover:text-red-700 text-sm font-medium"
+                      className="text-red-600 hover:text-red-700 text-sm font-medium ml-4"
                     >
                       Eliminar
                     </button>

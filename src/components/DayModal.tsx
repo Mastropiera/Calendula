@@ -67,9 +67,20 @@ export default function DayModal({ date, turnos, funcionarios, onClose }: DayMod
                 <div className="text-gray-700">
                   <span className="font-medium">Enfermeras ({largoAgrupado.enfermeras.length}/{requerido.enfermeras}):</span>
                   {largoAgrupado.enfermeras.length > 0 ? (
-                    <div className="ml-2">
+                    <div className="ml-2 space-y-1">
                       {largoAgrupado.enfermeras.map(t => (
-                        <div key={t.id}>{getFuncionarioNombre(t.funcionarioId)}</div>
+                        <div key={t.id} className="flex items-start gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full mt-0.5 flex-shrink-0"
+                            style={{ backgroundColor: t.color || '#10B981' }}
+                          />
+                          <div className="flex-1">
+                            <div>{getFuncionarioNombre(t.funcionarioId)}</div>
+                            {t.notas && (
+                              <div className="text-xs text-gray-600 italic mt-0.5">{t.notas}</div>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -81,9 +92,20 @@ export default function DayModal({ date, turnos, funcionarios, onClose }: DayMod
                 <div className="text-gray-700">
                   <span className="font-medium">TENS ({largoAgrupado.tens.length}/{requerido.tens}):</span>
                   {largoAgrupado.tens.length > 0 ? (
-                    <div className="ml-2">
+                    <div className="ml-2 space-y-1">
                       {largoAgrupado.tens.map(t => (
-                        <div key={t.id}>{getFuncionarioNombre(t.funcionarioId)}</div>
+                        <div key={t.id} className="flex items-start gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full mt-0.5 flex-shrink-0"
+                            style={{ backgroundColor: t.color || '#10B981' }}
+                          />
+                          <div className="flex-1">
+                            <div>{getFuncionarioNombre(t.funcionarioId)}</div>
+                            {t.notas && (
+                              <div className="text-xs text-gray-600 italic mt-0.5">{t.notas}</div>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -95,9 +117,20 @@ export default function DayModal({ date, turnos, funcionarios, onClose }: DayMod
                 <div className="text-gray-700">
                   <span className="font-medium">Auxiliares ({largoAgrupado.auxiliares.length}/{requerido.auxiliares}):</span>
                   {largoAgrupado.auxiliares.length > 0 ? (
-                    <div className="ml-2">
+                    <div className="ml-2 space-y-1">
                       {largoAgrupado.auxiliares.map(t => (
-                        <div key={t.id}>{getFuncionarioNombre(t.funcionarioId)}</div>
+                        <div key={t.id} className="flex items-start gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full mt-0.5 flex-shrink-0"
+                            style={{ backgroundColor: t.color || '#10B981' }}
+                          />
+                          <div className="flex-1">
+                            <div>{getFuncionarioNombre(t.funcionarioId)}</div>
+                            {t.notas && (
+                              <div className="text-xs text-gray-600 italic mt-0.5">{t.notas}</div>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -118,9 +151,20 @@ export default function DayModal({ date, turnos, funcionarios, onClose }: DayMod
                 <div className="text-gray-700">
                   <span className="font-medium">Enfermeras ({nocheAgrupado.enfermeras.length}/{requerido.enfermeras}):</span>
                   {nocheAgrupado.enfermeras.length > 0 ? (
-                    <div className="ml-2">
+                    <div className="ml-2 space-y-1">
                       {nocheAgrupado.enfermeras.map(t => (
-                        <div key={t.id}>{getFuncionarioNombre(t.funcionarioId)}</div>
+                        <div key={t.id} className="flex items-start gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full mt-0.5 flex-shrink-0"
+                            style={{ backgroundColor: t.color || '#10B981' }}
+                          />
+                          <div className="flex-1">
+                            <div>{getFuncionarioNombre(t.funcionarioId)}</div>
+                            {t.notas && (
+                              <div className="text-xs text-gray-600 italic mt-0.5">{t.notas}</div>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -132,9 +176,20 @@ export default function DayModal({ date, turnos, funcionarios, onClose }: DayMod
                 <div className="text-gray-700">
                   <span className="font-medium">TENS ({nocheAgrupado.tens.length}/{requerido.tens}):</span>
                   {nocheAgrupado.tens.length > 0 ? (
-                    <div className="ml-2">
+                    <div className="ml-2 space-y-1">
                       {nocheAgrupado.tens.map(t => (
-                        <div key={t.id}>{getFuncionarioNombre(t.funcionarioId)}</div>
+                        <div key={t.id} className="flex items-start gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full mt-0.5 flex-shrink-0"
+                            style={{ backgroundColor: t.color || '#10B981' }}
+                          />
+                          <div className="flex-1">
+                            <div>{getFuncionarioNombre(t.funcionarioId)}</div>
+                            {t.notas && (
+                              <div className="text-xs text-gray-600 italic mt-0.5">{t.notas}</div>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -146,9 +201,20 @@ export default function DayModal({ date, turnos, funcionarios, onClose }: DayMod
                 <div className="text-gray-700">
                   <span className="font-medium">Auxiliares ({nocheAgrupado.auxiliares.length}/{requerido.auxiliares}):</span>
                   {nocheAgrupado.auxiliares.length > 0 ? (
-                    <div className="ml-2">
+                    <div className="ml-2 space-y-1">
                       {nocheAgrupado.auxiliares.map(t => (
-                        <div key={t.id}>{getFuncionarioNombre(t.funcionarioId)}</div>
+                        <div key={t.id} className="flex items-start gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full mt-0.5 flex-shrink-0"
+                            style={{ backgroundColor: t.color || '#10B981' }}
+                          />
+                          <div className="flex-1">
+                            <div>{getFuncionarioNombre(t.funcionarioId)}</div>
+                            {t.notas && (
+                              <div className="text-xs text-gray-600 italic mt-0.5">{t.notas}</div>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
