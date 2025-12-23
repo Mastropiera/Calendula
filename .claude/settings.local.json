@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAgregar colores personalizados, notas y exportación a Excel\n\n- Agregar campos de color y notas opcionales a los turnos\n- Implementar selector de 8 colores predefinidos en asignación\n- Mostrar indicadores de color en el calendario\n- Visualizar notas en modal de día y listas de turnos\n- Instalar librería xlsx para exportación\n- Crear utilidad de exportación con 3 hojas \\(General, Por Funcionario, Por Sección\\)\n- Agregar botón de exportación en la interfaz principal\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAgregar rotativa de cuarto turno y vista por funcionario\n\nRotativa de Cuarto Turno:\n- Crear, editar y eliminar rotativas de cuarto turno\n- Patrón largo-noche-libre-libre \\(ciclo de 4 días\\)\n- Rotación automática por 16 secciones del hospital\n- Generación de turnos para 90 días\n- Actualización de secciones: Procedimientos 1/2, Reanimador 1/2, Trauma\n\nVista por Funcionario:\n- Selector de estamento y funcionario\n- Colores por tipo de turno \\(celeste=largo, azul oscuro=noche, verde=coordinación, naranja=otros\\)\n- Visualización de sección asignada y horarios\n- Filtrado de turnos por funcionario individual\n\nImportación de Personal:\n- Importar funcionarios desde Excel/CSV\n- Validación de datos y detección de duplicados\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(cat:*)"
+    ]
+  }
+}

@@ -338,9 +338,9 @@ export default function StaffManagement({
                       <td className="px-4 py-3 text-sm">{func.nombre}</td>
                       <td className="px-4 py-3 text-sm">{func.apellido}</td>
                       <td className="px-4 py-3 text-sm">
-                        {func.telefono ? (
+                        {func.telefono && typeof func.telefono === 'string' && func.telefono.trim() ? (
                           <a
-                            href={`https://wa.me/${func.telefono.replace(/\D/g, '')}`}
+                            href={`https://wa.me/${String(func.telefono).replace(/\D/g, '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-green-600 hover:text-green-700"

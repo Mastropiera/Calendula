@@ -5,20 +5,21 @@ import { useSession, signIn, signOut } from 'next-auth/react'
 import { RefreshCw, LogOut, Users, Download, Repeat } from 'lucide-react'
 import Calendar from '@/components/Calendar'
 import DayModal from '@/components/DayModal'
+import FuncionarioDayModal from '@/components/FuncionarioDayModal'
 import ViewSelector from '@/components/ViewSelector'
 import AssignmentPanel from '@/components/AssignmentPanel'
 import StaffManagement from '@/components/StaffManagement'
 import RotativaCuartoTurno from '@/components/RotativaCuartoTurno'
-import { getFuncionarios, getTurnos } from '@/lib/storage'
+import { getFuncionarios, getTurnos, saveTurnos } from '@/lib/storage'
 import { exportTurnosToExcel } from '@/lib/exportToExcel'
-import type { Funcionario, Turno, VistaCalendario, Seccion, Estamento } from '@/types'
+import type { Funcionario, Turno, VistaCalendario, SeccionFisica, Estamento } from '@/types'
 
 export default function Home() {
   const { data: session, status } = useSession()
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([])
   const [turnos, setTurnos] = useState<Turno[]>([])
   const [vista, setVista] = useState<VistaCalendario>('general')
-  const [seccionSeleccionada, setSeccionSeleccionada] = useState<Seccion>()
+  const [seccionSeleccionada, setSeccionSeleccionada] = useState<SeccionFisica>()
   const [estamentoSeleccionado, setEstamentoSeleccionado] = useState<Estamento>()
   const [funcionarioSeleccionado, setFuncionarioSeleccionado] = useState<string>()
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -63,6 +64,30 @@ export default function Home() {
       funcionarios,
       mesInicio: currentDate
     })
+  }
+
+  const handleDeleteTurno = async (turnoId: string) => {
+    const turnosActualizados = turnos.filter(t => t.id !== turnoId)
+    await saveTurnos(turnosActualizados)
+    setTurnos(turnosActualizados)
+  }
+
+  const handleAddTurno = async (turno: Omit<Turno, 'id'>) => {
+    const nuevoTurno: Turno = {
+      ...turno,
+      id: `turno-${Date.now()}-${Math.random()}`
+    }
+    const turnosActualizados = [...turnos, nuevoTurno]
+    await saveTurnos(turnosActualizados)
+    setTurnos(turnosActualizados)
+  }
+
+  const handleUpdateTurno = async (turnoId: string, turnoData: Partial<Turno>) => {
+    const turnosActualizados = turnos.map(t =>
+      t.id === turnoId ? { ...t, ...turnoData } : t
+    )
+    await saveTurnos(turnosActualizados)
+    setTurnos(turnosActualizados)
   }
 
   // Pantalla de login
@@ -196,7 +221,18 @@ export default function Home() {
         />
 
         {/* Modal de día */}
-        {selectedDate && (
+        {selectedDate && vista === 'por-funcionario' && funcionarioSeleccionado && (
+          <FuncionarioDayModal
+            date={selectedDate}
+            funcionario={funcionarios.find(f => f.id === funcionarioSeleccionado)!}
+            turnos={turnos}
+            onClose={() => setSelectedDate(null)}
+            onDeleteTurno={handleDeleteTurno}
+            onAddTurno={handleAddTurno}
+            onUpdateTurno={handleUpdateTurno}
+          />
+        )}
+        {selectedDate && vista !== 'por-funcionario' && (
           <DayModal
             date={selectedDate}
             turnos={turnos}

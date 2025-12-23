@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Plus, Trash2, Calendar, Users, Edit2 } from 'lucide-react'
+import { X, Plus, Trash2, Calendar, Users, Edit2, Repeat } from 'lucide-react'
 import { format, addDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { RotativaCuartoTurno, Funcionario, Turno, Seccion } from '@/types'
@@ -25,6 +25,9 @@ export default function RotativaCuartoTurno({
   const [rotativas, setRotativas] = useState<RotativaCuartoTurno[]>([])
   const [isCreating, setIsCreating] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [rotativaAGenerar, setRotativaAGenerar] = useState<RotativaCuartoTurno | null>(null)
+  const [modoGeneracion, setModoGeneracion] = useState<'nueva' | 'continuar'>('nueva')
+  const [mesesAGenerar, setMesesAGenerar] = useState(2)
   const [formData, setFormData] = useState({
     nombre: '',
     fechaInicio: '',
@@ -114,22 +117,43 @@ export default function RotativaCuartoTurno({
     setFormData({ nombre: '', fechaInicio: '', funcionariosSeleccionados: [] })
   }
 
-  const handleGenerarTurnos = async (rotativa: RotativaCuartoTurno) => {
+  const handleGenerarTurnos = async () => {
+    if (!rotativaAGenerar) return
+
     const nuevosTurnos: Turno[] = []
-    const fechaInicio = parseISO(rotativa.fechaInicio)
+    let fechaBase: Date
+    let diasInicialesGenerados = 0
+    let turnosFinales: Turno[]
+
+    if (modoGeneracion === 'continuar' && rotativaAGenerar.ultimaFechaGenerada) {
+      // Modo continuar: empezar desde el día siguiente a la última fecha generada
+      fechaBase = addDays(parseISO(rotativaAGenerar.ultimaFechaGenerada), 1)
+      diasInicialesGenerados = (rotativaAGenerar.mesesGenerados || 0) * 30
+      // Mantener los turnos existentes de esta rotativa
+      turnosFinales = turnos
+    } else {
+      // Modo nueva: eliminar turnos anteriores y empezar desde la fecha de inicio
+      fechaBase = parseISO(rotativaAGenerar.fechaInicio)
+      diasInicialesGenerados = 0
+      // Eliminar todos los turnos existentes de esta rotativa
+      turnosFinales = turnos.filter(t => t.rotativaId !== rotativaAGenerar.id)
+    }
+
+    const diasTotales = mesesAGenerar * 30 // Días del nuevo período a generar
 
     // Para cada funcionario
-    rotativa.funcionarios.forEach((funcionarioId, funcionarioIndex) => {
-      let diaActual = 0
-      let seccionIndex = 0
+    rotativaAGenerar.funcionarios.forEach((funcionarioId, funcionarioIndex) => {
+      // Calcular la sección inicial basada en los días ya generados
+      const ciclosCompletados = Math.floor(diasInicialesGenerados / 4)
+      let seccionIndex = (funcionarioIndex + ciclosCompletados) % rotativaAGenerar.secuenciaRotacion.length
 
-      // Generar turnos para los próximos 90 días
-      while (diaActual < 90) {
-        const seccion = rotativa.secuenciaRotacion[seccionIndex % rotativa.secuenciaRotacion.length]
+      // Generar turnos para el nuevo período
+      for (let diaActual = 0; diaActual < diasTotales; diaActual += 4) {
+        const seccion = rotativaAGenerar.secuenciaRotacion[seccionIndex % rotativaAGenerar.secuenciaRotacion.length]
 
         // Día 1: Largo
-        const fechaLargo = format(addDays(fechaInicio, diaActual + (funcionarioIndex * 4)), 'yyyy-MM-dd')
-        const dayOfWeekLargo = addDays(fechaInicio, diaActual + (funcionarioIndex * 4)).getDay()
+        const fechaLargo = format(addDays(fechaBase, diaActual), 'yyyy-MM-dd')
+        const dayOfWeekLargo = addDays(fechaBase, diaActual).getDay()
         const isWeekendLargo = dayOfWeekLargo === 0 || dayOfWeekLargo === 6
 
         nuevosTurnos.push({
@@ -141,12 +165,13 @@ export default function RotativaCuartoTurno({
           funcionarioId,
           seccion,
           personalizado: false,
-          color: '#8B5CF6'
+          color: '#8B5CF6',
+          rotativaId: rotativaAGenerar.id
         })
 
         // Día 2: Noche
-        const fechaNoche = format(addDays(fechaInicio, diaActual + 1 + (funcionarioIndex * 4)), 'yyyy-MM-dd')
-        const dayOfWeekNoche = addDays(fechaInicio, diaActual + 1 + (funcionarioIndex * 4)).getDay()
+        const fechaNoche = format(addDays(fechaBase, diaActual + 1), 'yyyy-MM-dd')
+        const dayOfWeekNoche = addDays(fechaBase, diaActual + 1).getDay()
         const isWeekendNoche = dayOfWeekNoche === 0 || dayOfWeekNoche === 6
 
         nuevosTurnos.push({
@@ -158,23 +183,36 @@ export default function RotativaCuartoTurno({
           funcionarioId,
           seccion,
           personalizado: false,
-          color: '#8B5CF6'
+          color: '#8B5CF6',
+          rotativaId: rotativaAGenerar.id
         })
 
         // Días 3 y 4: Libre (no se crea turno)
-
-        // Avanzar al siguiente ciclo de 4 días
-        diaActual += 4
         seccionIndex++
       }
     })
 
-    // Combinar con turnos existentes
-    const turnosActualizados = [...turnos, ...nuevosTurnos]
+    // Actualizar la rotativa con la nueva información
+    const ultimaFecha = format(addDays(fechaBase, diasTotales - 2), 'yyyy-MM-dd') // -2 porque el último turno es noche (día 2 del ciclo)
+    const mesesTotales = (diasInicialesGenerados + diasTotales) / 30
+
+    await updateRotativa(rotativaAGenerar.id, {
+      ultimaFechaGenerada: ultimaFecha,
+      mesesGenerados: mesesTotales
+    })
+
+    // Combinar turnos + nuevos turnos generados
+    const turnosActualizados = [...turnosFinales, ...nuevosTurnos]
     await saveTurnos(turnosActualizados)
     onTurnosChange(turnosActualizados)
 
-    alert(`Se generaron ${nuevosTurnos.length} turnos para la rotativa "${rotativa.nombre}"`)
+    const accion = modoGeneracion === 'continuar' ? 'Se continuaron' : 'Se generaron'
+    alert(`${accion} ${nuevosTurnos.length} turnos para la rotativa "${rotativaAGenerar.nombre}"`)
+
+    setRotativaAGenerar(null)
+    setMesesAGenerar(2)
+    setModoGeneracion('nueva')
+    await loadRotativas()
   }
 
   const handleDeleteRotativa = async (id: string) => {
@@ -387,19 +425,120 @@ export default function RotativaCuartoTurno({
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleGenerarTurnos(rotativa)}
-                    className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Calendar className="w-5 h-5" />
-                    Generar Turnos (próximos 60 días)
-                  </button>
+                  {rotativa.ultimaFechaGenerada && (
+                    <div className="mb-3 p-2 bg-blue-50 rounded-lg">
+                      <p className="text-xs text-blue-700">
+                        <strong>Última generación:</strong> {rotativa.ultimaFechaGenerada}
+                        <br />
+                        <strong>Meses generados:</strong> {rotativa.mesesGenerados?.toFixed(1) || 0}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setRotativaAGenerar(rotativa)
+                        setModoGeneracion('nueva')
+                      }}
+                      className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Calendar className="w-5 h-5" />
+                      Generar
+                    </button>
+                    {rotativa.ultimaFechaGenerada && (
+                      <button
+                        onClick={() => {
+                          setRotativaAGenerar(rotativa)
+                          setModoGeneracion('continuar')
+                        }}
+                        className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Repeat className="w-5 h-5" />
+                        Continuar
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))
             )}
           </div>
         </div>
       </div>
+
+      {/* Modal de confirmación para generar turnos */}
+      {rotativaAGenerar && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 m-4">
+            <h4 className="text-xl font-bold text-gray-800 mb-4">
+              {modoGeneracion === 'continuar' ? 'Continuar Rotativa' : 'Generar Turnos'}
+            </h4>
+
+            {modoGeneracion === 'continuar' ? (
+              <div className="mb-4">
+                <p className="text-gray-600 mb-3">
+                  Continuarás la rotativa "{rotativaAGenerar.nombre}" desde donde terminó.
+                </p>
+                <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-800 space-y-1">
+                  <p><strong>Última fecha generada:</strong> {rotativaAGenerar.ultimaFechaGenerada}</p>
+                  <p><strong>Próxima fecha de inicio:</strong> {format(addDays(parseISO(rotativaAGenerar.ultimaFechaGenerada!), 1), 'yyyy-MM-dd')}</p>
+                  <p><strong>Meses ya generados:</strong> {rotativaAGenerar.mesesGenerados?.toFixed(1) || 0}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-600 mb-4">
+                ¿Cuántos meses deseas generar para la rotativa "{rotativaAGenerar.nombre}"?
+                {rotativaAGenerar.ultimaFechaGenerada && (
+                  <span className="block mt-2 text-sm text-orange-600">
+                    <strong>Advertencia:</strong> Esto eliminará los turnos existentes y generará nuevos desde la fecha de inicio original.
+                  </span>
+                )}
+              </p>
+            )}
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {modoGeneracion === 'continuar' ? 'Meses adicionales a generar' : 'Número de meses'}
+              </label>
+              <select
+                value={mesesAGenerar}
+                onChange={(e) => setMesesAGenerar(Number(e.target.value))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value={1}>1 mes (~30 días)</option>
+                <option value={2}>2 meses (~60 días)</option>
+                <option value={3}>3 meses (~90 días)</option>
+                <option value={4}>4 meses (~120 días)</option>
+                <option value={5}>5 meses (~150 días)</option>
+                <option value={6}>6 meses (~180 días)</option>
+              </select>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleGenerarTurnos}
+                className={`flex-1 text-white px-4 py-2 rounded-lg font-semibold transition-colors ${
+                  modoGeneracion === 'continuar'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-purple-600 hover:bg-purple-700'
+                }`}
+              >
+                {modoGeneracion === 'continuar' ? 'Continuar' : 'Generar'}
+              </button>
+              <button
+                onClick={() => {
+                  setRotativaAGenerar(null)
+                  setMesesAGenerar(2)
+                  setModoGeneracion('nueva')
+                }}
+                className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

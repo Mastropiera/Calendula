@@ -1,13 +1,13 @@
 'use client'
 
-import type { VistaCalendario, Seccion, Estamento, Funcionario } from '@/types'
-import { NOMBRES_SECCION } from '@/types'
+import type { VistaCalendario, SeccionFisica, Estamento, Funcionario } from '@/types'
+import { NOMBRES_SECCION_FISICA } from '@/types'
 
 interface ViewSelectorProps {
   vista: VistaCalendario
   onVistaChange: (vista: VistaCalendario) => void
-  seccionSeleccionada?: Seccion
-  onSeccionChange: (seccion?: Seccion) => void
+  seccionSeleccionada?: SeccionFisica
+  onSeccionChange: (seccion?: SeccionFisica) => void
   estamentoSeleccionado?: Estamento
   onEstamentoChange: (estamento?: Estamento) => void
   funcionarioSeleccionado?: string
@@ -88,13 +88,13 @@ export default function ViewSelector({
             </label>
             <select
               value={seccionSeleccionada || ''}
-              onChange={(e) => onSeccionChange(e.target.value as Seccion || undefined)}
+              onChange={(e) => onSeccionChange(e.target.value as SeccionFisica || undefined)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
               <option value="">Seleccionar sección...</option>
-              {(Object.keys(NOMBRES_SECCION) as Seccion[]).map(seccion => (
+              {(Object.keys(NOMBRES_SECCION_FISICA) as SeccionFisica[]).map(seccion => (
                 <option key={seccion} value={seccion}>
-                  {NOMBRES_SECCION[seccion]}
+                  {NOMBRES_SECCION_FISICA[seccion]}
                 </option>
               ))}
             </select>

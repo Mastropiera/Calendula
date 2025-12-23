@@ -40,6 +40,8 @@ export interface RotativaCuartoTurno {
   secuenciaRotacion: Seccion[] // Secciones en orden de rotación
   fechaInicio: string // formato: YYYY-MM-DD
   diasPorSeccion: number // típicamente 2 (largo + noche)
+  ultimaFechaGenerada?: string // YYYY-MM-DD - última fecha hasta donde se generaron turnos
+  mesesGenerados?: number // Total de meses generados acumulados
 }
 
 // Estructura de un turno asignado
@@ -54,6 +56,7 @@ export interface Turno {
   personalizado?: boolean
   color?: string // color en formato hex, ej: #FF5733
   notas?: string // notas adicionales del turno
+  rotativaId?: string // ID de la rotativa que generó este turno (si aplica)
 }
 
 // Estructura de cobertura diaria por sección
@@ -121,6 +124,52 @@ export const NOMBRES_SECCION: Record<Seccion, string> = {
   'central': 'Central',
   'fast-track': 'Fast Track',
   'coordinacion': 'Coordinación',
+}
+
+// Secciones físicas agrupadas (para vista por sección)
+export type SeccionFisica =
+  | 'selector'
+  | 'reanimador'
+  | 'esi2'
+  | 'vertical'
+  | 'horizontal'
+  | 'boarding-oriente'
+  | 'boarding-poniente'
+  | 'procedimientos'
+  | 'trauma'
+  | 'central'
+  | 'fast-track'
+  | 'coordinacion'
+
+export const NOMBRES_SECCION_FISICA: Record<SeccionFisica, string> = {
+  'selector': 'Selector',
+  'reanimador': 'Reanimador',
+  'esi2': 'ESI 2',
+  'vertical': 'Vertical',
+  'horizontal': 'Horizontal',
+  'boarding-oriente': 'Boarding Oriente',
+  'boarding-poniente': 'Boarding Poniente',
+  'procedimientos': 'Procedimientos',
+  'trauma': 'Trauma',
+  'central': 'Central',
+  'fast-track': 'Fast Track',
+  'coordinacion': 'Coordinación',
+}
+
+// Mapeo de secciones físicas a sus variantes de turnos
+export const SECCION_FISICA_A_VARIANTES: Record<SeccionFisica, Seccion[]> = {
+  'selector': ['selector'],
+  'reanimador': ['reanimador1', 'reanimador2'],
+  'esi2': ['esi2'],
+  'vertical': ['vertical1', 'vertical2'],
+  'horizontal': ['horizontal'],
+  'boarding-oriente': ['boarding-oriente'],
+  'boarding-poniente': ['boarding-poniente'],
+  'procedimientos': ['procedimientos1', 'procedimientos2'],
+  'trauma': ['trauma'],
+  'central': ['central'],
+  'fast-track': ['fast-track'],
+  'coordinacion': ['coordinacion'],
 }
 
 // Secuencia de rotación para cuarto turno (basada en la imagen proporcionada)

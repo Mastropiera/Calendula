@@ -4,14 +4,14 @@ import { useState, useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import type { Turno, EstadoCobertura, VistaCalendario, Seccion, Estamento } from '@/types'
-import { REQUERIMIENTOS_SECCION, NOMBRES_SECCION } from '@/types'
+import type { Turno, EstadoCobertura, VistaCalendario, SeccionFisica, Estamento } from '@/types'
+import { REQUERIMIENTOS_SECCION, NOMBRES_SECCION, SECCION_FISICA_A_VARIANTES } from '@/types'
 
 interface CalendarProps {
   turnos: Turno[]
   onDayClick: (date: Date) => void
   vista: VistaCalendario
-  seccionSeleccionada?: Seccion
+  seccionSeleccionada?: SeccionFisica
   estamentoSeleccionado?: Estamento
   funcionarioSeleccionado?: string
   funcionarios: any[]
@@ -73,7 +73,9 @@ export default function Calendar({
     let turnosDelDia = turnos.filter(t => t.fecha === dateStr)
 
     if (vista === 'por-seccion' && seccionSeleccionada) {
-      turnosDelDia = turnosDelDia.filter(t => t.seccion === seccionSeleccionada)
+      // Obtener todas las variantes de la sección física
+      const variantes = SECCION_FISICA_A_VARIANTES[seccionSeleccionada]
+      turnosDelDia = turnosDelDia.filter(t => variantes.includes(t.seccion))
     }
 
     if (vista === 'por-funcionario' && funcionarioSeleccionado) {
