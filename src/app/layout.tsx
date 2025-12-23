@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: 'Sistema de gestión de turnos para urgencia hospitalaria',
 }
 
+// Deshabilitar generación estática para evitar errores con NextAuth
+export const dynamic = 'force-dynamic'
+
 export default function RootLayout({
   children,
 }: {
